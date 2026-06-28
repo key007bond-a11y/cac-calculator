@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAC Калькулятор — Привлечение клиентов</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#F0F2F5;
+  --surface:#FFFFFF;
+  --surface2:#F7F8FA;
+  --border:#E4E7EC;
+  --border2:#CDD2DB;
+  --text:#111827;
+  --text2:#4B5563;
+  --text3:#9CA3AF;
+  --accent:#2563EB;
+  --accent-bg:#EFF6FF;
+  --accent-text:#1D4ED8;
+  --green:#15803D;
+  --green-bg:#F0FDF4;
+  --green-border:#86EFAC;
+  --red:#DC2626;
+  --red-bg:#FEF2F2;
+  --red-border:#FCA5A5;
+  --amber:#D97706;
+  --amber-bg:#FFFBEB;
+  --amber-border:#FCD34D;
+  --purple:#7C3AED;
+  --purple-bg:#F5F3FF;
+  --radius:8px;
+  --radius-sm:5px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+}
+
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;min-height:100vh}
+
+/* ── HEADER ── */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}
+.app-header h1{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.app-header p{font-size:11px;color:var(--text3);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:10px}
+.currency-box{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px}
+.currency-box label{font-size:11px;color:var(--text3);white-space:nowrap;font-weight:500}
+.currency-box input{width:52px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--accent);text-align:right;outline:none}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:380px 1fr;min-height:calc(100vh - 57px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.25rem;overflow-y:auto;height:calc(100vh - 57px);position:sticky;top:57px}
+.main{padding:1.25rem;overflow-y:auto}
+
+/* ── SIDEBAR SECTIONS ── */
+.s-section{margin-bottom:1.25rem}
+.s-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding-bottom:.4rem;border-bottom:1px solid var(--border);margin-bottom:.65rem}
+.s-group{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem;margin-bottom:.6rem}
+.s-group-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;display:flex;align-items:center;gap:6px}
+.s-group-title .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-green{background:#15803D}
+.dot-blue{background:#2563EB}
+.dot-amber{background:#D97706}
+.dot-purple{background:#7C3AED}
+
+/* ── FIELDS ── */
+.field{margin-bottom:.5rem}
+.field-label{font-size:11px;color:var(--text2);margin-bottom:.25rem;display:flex;align-items:center;justify-content:space-between}
+.field-label span{font-size:10px;color:var(--text3);font-style:italic}
+.dual-input{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.input-wrap{position:relative}
+.input-wrap .currency{position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);pointer-events:none;font-weight:500}
+.input-wrap input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 6px 5px 22px;font-size:12px;font-weight:600;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s}
+.input-wrap input:focus{border-color:var(--accent)}
+.input-wrap.usd .currency{color:#15803D}
+.input-wrap.usd input{color:#15803D}
+.input-wrap.active input{background:var(--accent-bg);border-color:var(--accent)}
+.input-wrap.active .currency{color:var(--accent)}
+
+/* toggle switches */
+.toggle-row{display:flex;gap:4px;margin-bottom:.65rem}
+.toggle-btn{flex:1;padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;transition:all .15s;font-weight:500}
+.toggle-btn.active{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent);font-weight:700}
+
+/* funnel inputs */
+.funnel-grid{display:grid;grid-template-columns:1fr 80px 80px;gap:6px;align-items:center}
+.funnel-grid .fg-label{font-size:11px;color:var(--text2)}
+.funnel-grid .fg-head{font-size:10px;color:var(--text3);font-weight:600;text-align:right}
+.fn-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 6px;font-size:12px;font-weight:600;color:var(--text);background:var(--surface);outline:none;text-align:right}
+.fn-input:focus{border-color:var(--accent)}
+.fn-calc{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 6px;font-size:12px;font-weight:600;color:var(--text2);text-align:right}
+
+/* итого строка */
+.s-total{display:flex;justify-content:space-between;align-items:center;padding:.4rem .6rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);margin-top:.5rem}
+.s-total .t-label{font-size:11px;color:var(--text2);font-weight:600}
+.s-total .t-values{display:flex;gap:10px;align-items:center}
+.s-total .t-uah{font-size:13px;font-weight:700;color:var(--text)}
+.s-total .t-usd{font-size:11px;color:var(--green);font-weight:600}
+
+/* ── MAIN PANEL ── */
+.panel-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:.85rem;letter-spacing:-.01em}
+
+/* verdict banner */
+.verdict{border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;border:1px solid transparent;display:flex;align-items:flex-start;gap:.65rem}
+.verdict .v-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.verdict .v-text .v-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.verdict .v-text .v-sub{font-size:11px;line-height:1.5}
+.verdict.good{background:var(--green-bg);border-color:var(--green-border)}
+.verdict.good .v-title{color:var(--green)}
+.verdict.bad{background:var(--red-bg);border-color:var(--red-border)}
+.verdict.bad .v-title{color:var(--red)}
+.verdict.warn{background:var(--amber-bg);border-color:var(--amber-border)}
+.verdict.warn .v-title{color:var(--amber)}
+
+/* P&L table */
+.pl-table{width:100%;border-collapse:collapse;margin-bottom:1rem;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow)}
+.pl-table th{background:#1E3A5F;color:#fff;font-size:10px;font-weight:700;text-align:center;padding:7px 10px;border:1px solid #2a4a75;text-transform:uppercase;letter-spacing:.04em}
+.pl-table th.col-label{text-align:left;width:36%}
+.pl-table td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.pl-table td.row-label{font-size:11px;color:var(--text2);line-height:1.4}
+.pl-table td.row-label .hint{font-size:10px;color:var(--text3);font-style:italic;display:block;margin-top:1px}
+.pl-table td.val{text-align:right;font-size:12px;font-weight:700;color:var(--text);white-space:nowrap}
+.pl-table td.val .usd{display:block;font-size:10px;font-weight:500;color:var(--green);margin-top:1px}
+.pl-table td.val .pct{display:block;font-size:10px;font-weight:500;color:var(--text3);margin-top:1px}
+.pl-table tr:last-child td{border-bottom:none}
+
+/* section rows */
+.pl-table tr.sec-row td{background:#F0F2F5;padding:4px 10px}
+.pl-table tr.sec-row td .sec-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.pl-table tr.total-row td{background:var(--amber-bg);border-top:2px solid var(--amber-border)}
+.pl-table tr.total-row td.row-label{font-weight:700;color:var(--amber);font-size:12px}
+.pl-table tr.total-row td.val{color:var(--amber)}
+.pl-table tr.margin-row td{background:var(--green-bg)}
+.pl-table tr.margin-row td.row-label{font-weight:700;color:var(--green);font-size:12px}
+.pl-table tr.margin-row td.val{color:var(--green)}
+.pl-table tr.cac-row td{background:var(--accent-bg)}
+.pl-table tr.cac-row td.row-label{font-weight:700;color:var(--accent-text);font-size:12px}
+.pl-table tr.cac-row td.val{color:var(--accent-text)}
+.pl-table tr.profit-row td{background:#FEF9C3;border-top:2px solid #FDE047}
+.pl-table tr.profit-row td.row-label{font-weight:700;font-size:12px}
+.pl-table tr.profit-good td{background:var(--green-bg);border-top:2px solid var(--green-border)}
+.pl-table tr.profit-good td.row-label{color:var(--green)}
+.pl-table tr.profit-good td.val{color:var(--green)}
+.pl-table tr.profit-bad td{background:var(--red-bg);border-top:2px solid var(--red-border)}
+.pl-table tr.profit-bad td.row-label{color:var(--red)}
+.pl-table tr.profit-bad td.val{color:var(--red)}
+.pl-table tr.indent-row td.row-label{padding-left:22px}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem;box-shadow:var(--shadow)}
+.kpi .k-label{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.kpi .k-term{font-size:9px;color:var(--text3);font-style:italic;margin-bottom:6px;line-height:1.4}
+.kpi .k-val{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.kpi .k-usd{font-size:12px;font-weight:600;color:var(--green);margin-top:2px}
+.kpi .k-meaning{font-size:10px;color:var(--text3);margin-top:5px;padding-top:5px;border-top:1px solid var(--border);line-height:1.4}
+.kpi.good{border-color:var(--green-border);background:var(--green-bg)}
+.kpi.good .k-val{color:var(--green)}
+.kpi.bad{border-color:var(--red-border);background:var(--red-bg)}
+.kpi.bad .k-val{color:var(--red)}
+.kpi.accent{border-color:#BFDBFE;background:var(--accent-bg)}
+.kpi.accent .k-val{color:var(--accent-text)}
+.kpi.purple{border-color:#DDD6FE;background:var(--purple-bg)}
+.kpi.purple .k-val{color:var(--purple)}
+.kpi.warn{border-color:var(--amber-border);background:var(--amber-bg)}
+.kpi.warn .k-val{color:var(--amber)}
+
+/* LTV section */
+.ltv-section{margin-top:1rem}
+.block-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:.65rem;display:flex;align-items:center;gap:6px}
+.block-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+  .sidebar { display: none !important; }
+  .layout { grid-template-columns: 1fr !important; }
+  .app-header button { display: none !important; }
+  .main { padding: 0 !important; overflow: visible !important; height: auto !important; }
+  body { background: white !important; font-size: 11px !important; }
+  .pl-table th { font-size: 9px !important; padding: 4px 6px !important; }
+  .pl-table td { padding: 4px 6px !important; font-size: 10px !important; }
+  .kpi-grid { grid-template-columns: repeat(3,1fr) !important; }
+  .kpi .k-val { font-size: 14px !important; }
+  .verdict { padding: .5rem .75rem !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <h1>Калькулятор CAC — Привлечение клиентов через дегустации</h1>
+    <p>Введите данные слева → результаты обновятся автоматически</p>
+  </div>
+  <div class="header-right">
+    <button onclick="downloadExcel()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#15803D;color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Скачать Excel
+    </button>
+    <button onclick="printPDF()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#6B7280;color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Сохранить PDF
+    </button>
+    <div class="currency-box">
+      <label>Курс USD/UAH</label>
+      <input type="number" id="rate" value="45" min="1" max="200" step="0.5" oninput="calc()">
+      <span style="font-size:11px;color:var(--text3)">₴</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<aside class="sidebar">
+
+  <!-- ВОРОНКА -->
+  <div class="s-section">
+    <div class="s-title">Воронка продаж</div>
+    <div class="s-group">
+      <div class="s-group-title"><span class="dot dot-blue"></span>Активность менеджера</div>
+
+      <div class="funnel-grid" style="margin-bottom:.4rem">
+        <div class="fg-head"></div>
+        <div class="fg-head">Кол-во</div>
+        <div class="fg-head">% от пред.</div>
+      </div>
+
+      <div class="funnel-grid" style="margin-bottom:.5rem">
+        <div class="fg-label">Точек обошли</div>
+        <input class="fn-input" id="f-visits" type="number" value="80" min="0" oninput="calcFunnel('visits')">
+        <div class="fn-calc" id="f-visits-pct">100%</div>
+      </div>
+
+      <div class="funnel-grid" style="margin-bottom:.5rem">
+        <div class="fg-label">Назначено дегустаций</div>
+        <input class="fn-input" id="f-degs" type="number" value="15" min="0" oninput="calcFunnel('degs-n')">
+        <input class="fn-input" id="f-degs-pct" type="number" value="19" min="0" max="100" step="1" oninput="calcFunnel('degs-p')" style="color:var(--accent)">
+      </div>
+
+      <div class="funnel-grid" style="margin-bottom:.25rem">
+        <div class="fg-label">Привлечено клиентов</div>
+        <input class="fn-input" id="f-clients" type="number" value="2" min="0" oninput="calcFunnel('cli-n')">
+        <input class="fn-input" id="f-clients-pct" type="number" value="13" min="0" max="100" step="1" oninput="calcFunnel('cli-p')" style="color:var(--accent)">
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:.35rem;font-style:italic">Вводите число или % — второе пересчитается</div>
+
+      <div style="margin-top:.75rem">
+        <div class="field-label">Плановое кол-во клиентов (сценарий)</div>
+        <input class="fn-input" id="f-plan" type="number" value="6" min="1" oninput="calc()" style="width:80px">
+        <span style="font-size:10px;color:var(--text3);margin-left:6px">Колонка «План» пересчитается</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ЗАКАЗ КЛИЕНТА -->
+  <div class="s-section">
+    <div class="s-title">Заказ клиента</div>
+    <div class="s-group">
+      <div class="s-group-title"><span class="dot dot-green"></span>Параметры заказа</div>
+
+      <div class="field">
+        <div class="field-label">Объём заказа, кг <span>вводите число</span></div>
+        <input class="fn-input" id="ord-kg" type="number" value="15" min="0" step="0.5" oninput="calc()" style="width:80px">
+      </div>
+
+      <div class="field">
+        <div class="field-label">Цена 1 кг <span>введите ₴ или $</span></div>
+        <div class="dual-input">
+          <div class="input-wrap"><span class="currency">₴</span><input type="number" id="ord-price-uah" value="1170" min="0" oninput="syncCurrency('ord-price','uah')"></div>
+          <div class="input-wrap usd"><span class="currency">$</span><input type="number" id="ord-price-usd" value="26" min="0" step="0.5" oninput="syncCurrency('ord-price','usd')"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- БЛОК СЕБЕСТОИМОСТЬ -->
+    <div class="s-group">
+      <div class="s-group-title"><span class="dot dot-amber"></span>Блок 1 — Себестоимість привлечённых клиентов</div>
+
+      <div class="field">
+        <div class="field-label">Себестоимость товара, % <span>от выручки</span></div>
+        <input class="fn-input" id="cogs-pct" type="number" value="55" min="0" max="100" step="1" oninput="calc()" style="width:70px">
+        <span style="font-size:11px;color:var(--text3);margin-left:4px">%</span>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Доставка до клиента <span>% или фикс.</span></div>
+        <div class="toggle-row" style="margin-bottom:.4rem">
+          <button class="toggle-btn active" id="del-mode-pct" onclick="setDelivMode('pct')">% от заказа</button>
+          <button class="toggle-btn" id="del-mode-fix" onclick="setDelivMode('fix')">Фикс. сумма</button>
+        </div>
+        <div id="del-pct-block">
+          <input class="fn-input" id="del-pct" type="number" value="0" min="0" max="100" step="0.5" oninput="calc()" style="width:70px">
+          <span style="font-size:11px;color:var(--text3);margin-left:4px">% от суммы заказа</span>
+        </div>
+        <div id="del-fix-block" style="display:none">
+          <div class="dual-input">
+            <div class="input-wrap"><span class="currency">₴</span><input type="number" id="del-fix-uah" value="0" min="0" oninput="syncCurrency('del-fix','uah')"></div>
+            <div class="input-wrap usd"><span class="currency">$</span><input type="number" id="del-fix-usd" value="0" min="0" step="0.5" oninput="syncCurrency('del-fix','usd')"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="s-total">
+        <span class="t-label">Итого себестоимость / клиент</span>
+        <div class="t-values">
+          <span class="t-uah" id="tot-cogs-uah">—</span>
+          <span class="t-usd" id="tot-cogs-usd">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- БЛОК ПРИВЛЕЧЕНИЯ -->
+  <div class="s-section">
+    <div class="s-title">Привлечение клиента</div>
+    <div class="s-group">
+      <div class="s-group-title"><span class="dot dot-blue"></span>Блок 2 — Менеджер по продажам</div>
+
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="mgr-mode-salary" onclick="setMgrMode('salary')">Полный оклад</button>
+        <button class="toggle-btn" id="mgr-mode-hourly" onclick="setMgrMode('hourly')">Почасовая</button>
+      </div>
+
+      <div id="mgr-salary-block">
+        <div class="field">
+          <div class="field-label">Оклад в месяц <span>₴ или $</span></div>
+          <div class="dual-input">
+            <div class="input-wrap"><span class="currency">₴</span><input type="number" id="mgr-sal-uah" value="20000" min="0" oninput="syncCurrency('mgr-sal','uah')"></div>
+            <div class="input-wrap usd"><span class="currency">$</span><input type="number" id="mgr-sal-usd" value="444" min="0" step="1" oninput="syncCurrency('mgr-sal','usd')"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mgr-hourly-block" style="display:none">
+        <div class="field">
+          <div class="field-label">Оклад (для расчёта часа) <span>₴ или $</span></div>
+          <div class="dual-input">
+            <div class="input-wrap"><span class="currency">₴</span><input type="number" id="mgr-sal-uah2" value="20000" min="0" oninput="syncHourly()"></div>
+            <div class="input-wrap usd"><span class="currency">$</span><input type="number" id="mgr-sal-usd2" value="444" min="0" step="1" oninput="syncCurrency('mgr-sal','usd')"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="field">
+            <div class="field-label">Рабочих дней/мес</div>
+            <input class="fn-input" id="mgr-days" type="number" value="20" min="1" oninput="calc()">
+          </div>
+          <div class="field">
+            <div class="field-label">Часов в день</div>
+            <input class="fn-input" id="mgr-hours-day" type="number" value="8" min="1" oninput="calc()">
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Часов на 1 дегустацию</div>
+          <input class="fn-input" id="mgr-hours-deg" type="number" value="2" min="0" step="0.5" oninput="calc()" style="width:80px">
+        </div>
+        <div class="s-total" style="margin-top:.35rem">
+          <span class="t-label">Стоимость часа менеджера</span>
+          <div class="t-values">
+            <span class="t-uah" id="mgr-hour-rate-uah">—</span>
+            <span class="t-usd" id="mgr-hour-rate-usd">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- БОНУС -->
+      <div class="field">
+        <div class="field-label">Бонус от выручки новых клиентов, %<span>от выручки всех клиентов месяца</span></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input class="fn-input" id="mgr-bonus-pct" type="number" value="0" min="0" max="50" step="0.5" oninput="calc()" style="width:70px">
+          <span style="font-size:11px;color:var(--text3)">% → бонус: <span id="mgr-bonus-amt-s">0 ₴</span></span>
+        </div>
+      </div>
+
+      <!-- ТРАНСПОРТ -->
+      <div class="field">
+        <div class="field-label">Транспортные расходы<span>кол-во × грн/ед = итог</span></div>
+        <div style="display:grid;grid-template-columns:70px 12px 80px auto;align-items:center;gap:5px">
+          <input class="fn-input" id="transp-qty" type="number" value="0" min="0" oninput="calc()" placeholder="кол-во">
+          <span style="font-size:12px;color:var(--text3);text-align:center">×</span>
+          <input class="fn-input" id="transp-price" type="number" value="75" min="0" oninput="calc()" placeholder="грн/ед">
+          <span style="font-size:11px;color:var(--text3)">= <span id="transp-total-s" style="font-weight:700;color:var(--text)">0 ₴</span></span>
+        </div>
+      </div>
+
+      <!-- ЧЕКИ -->
+      <div class="field">
+        <div class="field-label">Чеки на посещение точек<span>кол-во × грн/ед = итог</span></div>
+        <div style="display:grid;grid-template-columns:70px 12px 80px auto;align-items:center;gap:5px">
+          <input class="fn-input" id="checks-qty" type="number" value="0" min="0" oninput="calc()" placeholder="кол-во">
+          <span style="font-size:12px;color:var(--text3);text-align:center">×</span>
+          <input class="fn-input" id="checks-price" type="number" value="25" min="0" oninput="calc()" placeholder="грн/ед">
+          <span style="font-size:11px;color:var(--text3)">= <span id="checks-total-s" style="font-weight:700;color:var(--text)">0 ₴</span></span>
+        </div>
+      </div>
+
+      <div class="s-total">
+        <span class="t-label">Итого менеджер / месяц</span>
+        <div class="t-values">
+          <span class="t-uah" id="tot-mgr-uah">—</span>
+          <span class="t-usd" id="tot-mgr-usd">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- БАРИСТА -->
+    <div class="s-group">
+      <div class="s-group-title"><span class="dot dot-purple"></span>Блок 2 — Бариста / тех. менеджер</div>
+
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="bar-on" onclick="setBarista(true)">Участвует</button>
+        <button class="toggle-btn" id="bar-off" onclick="setBarista(false)">Не участвует</button>
+      </div>
+
+      <div id="barista-block">
+        <div class="field">
+          <div class="field-label">Базовая ставка за выход <span>₴ или $</span></div>
+          <div class="dual-input">
+            <div class="input-wrap"><span class="currency">₴</span><input type="number" id="bar-base-uah" value="1000" min="0" oninput="syncCurrency('bar-base','uah')"></div>
+            <div class="input-wrap usd"><span class="currency">$</span><input type="number" id="bar-base-usd" value="22.22" min="0" step="0.5" oninput="syncCurrency('bar-base','usd')"></div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Ставка за доп. час <span>₴ или $</span></div>
+          <div class="dual-input">
+            <div class="input-wrap"><span class="currency">₴</span><input type="number" id="bar-rate-uah" value="300" min="0" oninput="syncCurrency('bar-rate','uah')"></div>
+            <div class="input-wrap usd"><span class="currency">$</span><input type="number" id="bar-rate-usd" value="6.67" min="0" step="0.5" oninput="syncCurrency('bar-rate','usd')"></div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Доп. часов на 1 дегустацию</div>
+          <input class="fn-input" id="bar-hours" type="number" value="1" min="0" step="0.5" oninput="calc()" style="width:80px">
+        </div>
+        <div class="s-total" style="background:var(--purple-bg)">
+          <span class="t-label">Стоимость 1 дегустации</span>
+          <div class="t-values">
+            <span class="t-uah" id="bar-per-deg-uah">—</span>
+            <span class="t-usd" id="bar-per-deg-usd">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="s-total">
+        <span class="t-label">Итого бариста / месяц</span>
+        <div class="t-values">
+          <span class="t-uah" id="tot-bar-uah">—</span>
+          <span class="t-usd" id="tot-bar-usd">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- СЫРЬЁ -->
+    <div class="s-group">
+      <div class="s-group-title"><span class="dot dot-amber"></span>Блок 2 — Сырьё для дегустаций</div>
+      <div class="field">
+        <div class="field-label">Расход сырья на 1 дегустацию, кг</div>
+        <input class="fn-input" id="raw-kg" type="number" value="0.3" min="0" step="0.1" oninput="calc()" style="width:80px">
+      </div>
+      <div class="field">
+        <div class="field-label">Цена 1 кг сырья <span>₴ или $</span></div>
+        <div class="dual-input">
+          <div class="input-wrap"><span class="currency">₴</span><input type="number" id="raw-price-uah" value="1170" min="0" oninput="syncCurrency('raw-price','uah')"></div>
+          <div class="input-wrap usd"><span class="currency">$</span><input type="number" id="raw-price-usd" value="26" min="0" step="0.5" oninput="syncCurrency('raw-price','usd')"></div>
+        </div>
+      </div>
+      <div class="s-total">
+        <span class="t-label">Итого сырьё / месяц</span>
+        <div class="t-values">
+          <span class="t-uah" id="tot-raw-uah">—</span>
+          <span class="t-usd" id="tot-raw-usd">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ИТОГО ПРИВЛЕЧЕНИЕ -->
+    <div class="s-total" style="background:var(--accent-bg);border-color:#BFDBFE;padding:.6rem .75rem">
+      <span class="t-label" style="color:var(--accent-text);font-size:12px;font-weight:700">Итого привлечение / месяц</span>
+      <div class="t-values">
+        <span class="t-uah" id="tot-att-uah" style="color:var(--accent-text);font-size:14px">—</span>
+        <span class="t-usd" id="tot-att-usd">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LTV ВВОДНЫЕ -->
+  <div class="s-section">
+    <div class="s-title">LTV — жизненный цикл клиента</div>
+    <div class="s-group">
+      <div class="s-group-title"><span class="dot dot-purple"></span>Параметры повторных заказов</div>
+      <div class="field">
+        <div class="field-label">Срок жизни клиента, мес</div>
+        <input class="fn-input" id="ltv-months" type="number" value="12" min="1" oninput="calc()" style="width:80px">
+      </div>
+      <div class="field">
+        <div class="field-label">Частота закупок в год, раз</div>
+        <input class="fn-input" id="ltv-freq" type="number" value="6" min="1" oninput="calc()" style="width:80px">
+      </div>
+      <div class="field">
+        <div class="field-label">Объём повторного заказа, кг</div>
+        <input class="fn-input" id="ltv-kg" type="number" value="15" min="0" step="0.5" oninput="calc()" style="width:80px">
+      </div>
+      <div class="field">
+        <div class="field-label">Цена при повторной закупке <span>₴ или $</span></div>
+        <div class="dual-input">
+          <div class="input-wrap"><span class="currency">₴</span><input type="number" id="ltv-price-uah" value="1170" min="0" oninput="syncCurrency('ltv-price','uah')"></div>
+          <div class="input-wrap usd"><span class="currency">$</span><input type="number" id="ltv-price-usd" value="26" min="0" step="0.5" oninput="syncCurrency('ltv-price','usd')"></div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Себестоимость повторного заказа, %</div>
+        <input class="fn-input" id="ltv-cogs" type="number" value="55" min="0" max="100" oninput="calc()" style="width:70px">
+        <span style="font-size:11px;color:var(--text3);margin-left:4px">%</span>
+      </div>
+    </div>
+  </div>
+
+</aside>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main class="main">
+
+  <!-- ВОРОНКА КОНВЕРСИИ -->
+  <div style="margin-bottom:1rem">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.65rem">Воронка конверсии</div>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:6px">
+
+      <!-- Точки -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem .5rem;text-align:center;box-shadow:var(--shadow)">
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Обошли точек</div>
+        <div style="font-size:24px;font-weight:800;color:var(--text)" id="fn-visits">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">100%</div>
+      </div>
+
+      <!-- Стрелка 1 -->
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text3);font-weight:600;margin-bottom:2px" id="fn-arr1-pct">—</div>
+        <div style="font-size:18px;color:var(--border2)">→</div>
+      </div>
+
+      <!-- Дегустации -->
+      <div style="background:var(--accent-bg);border:1px solid #BFDBFE;border-radius:var(--radius);padding:.7rem .5rem;text-align:center;box-shadow:var(--shadow)">
+        <div style="font-size:10px;color:var(--accent-text);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Дегустаций</div>
+        <div style="font-size:24px;font-weight:800;color:var(--accent-text)" id="fn-degs">—</div>
+        <div style="font-size:11px;color:var(--accent-text);margin-top:2px;font-weight:600" id="fn-degs-pct2">—</div>
+      </div>
+
+      <!-- Стрелка 2 -->
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text3);font-weight:600;margin-bottom:2px" id="fn-arr2-pct">—</div>
+        <div style="font-size:18px;color:var(--border2)">→</div>
+      </div>
+
+      <!-- Клиенты -->
+      <div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);padding:.7rem .5rem;text-align:center;box-shadow:var(--shadow)">
+        <div style="font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Клиентов (факт)</div>
+        <div style="font-size:24px;font-weight:800;color:var(--green)" id="fn-clients">—</div>
+        <div style="font-size:11px;color:var(--green);margin-top:2px;font-weight:600" id="fn-clients-pct2">—</div>
+      </div>
+
+      <!-- Стрелка 3 -->
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text3);font-weight:600;margin-bottom:2px" id="fn-arr3-pct">—</div>
+        <div style="font-size:18px;color:var(--border2)">→</div>
+      </div>
+
+      <!-- Не сработало -->
+      <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:.7rem .5rem;text-align:center;box-shadow:var(--shadow)">
+        <div style="font-size:10px;color:var(--red);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Не сработало</div>
+        <div style="font-size:24px;font-weight:800;color:var(--red)" id="fn-lost">—</div>
+        <div style="font-size:11px;color:var(--red);margin-top:2px;font-weight:600" id="fn-lost-pct">— дегустаций</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ВЕРДИКТ -->
+  <div class="verdict" id="verdict">
+    <div class="v-icon">⏳</div>
+    <div class="v-text">
+      <div class="v-title" id="verdict-title">Рассчитываем...</div>
+      <div class="v-sub" id="verdict-sub"></div>
+    </div>
+  </div>
+
+  <!-- KPI ПАНЕЛЬ -->
+  <div class="block-title">Ключевые показатели</div>
+  <div class="kpi-grid">
+    <div class="kpi" id="kpi-profit1">
+      <div class="k-label">Прибыль / 1 клиент</div>
+      <div class="k-term">Маржа с 1 клиента минус стоимость его привлечения (CAC)</div>
+      <div class="k-val" id="kpi-profit1-val">—</div>
+      <div class="k-usd" id="kpi-profit1-usd">—</div>
+      <div class="k-meaning" id="kpi-profit1-meaning">—</div>
+    </div>
+    <div class="kpi" id="kpi-profit-month">
+      <div class="k-label">Прибыль / месяц (план)</div>
+      <div class="k-term">Маржа всех плановых клиентов минус все затраты на привлечение</div>
+      <div class="k-val" id="kpi-profit-month-val">—</div>
+      <div class="k-usd" id="kpi-profit-month-usd">—</div>
+      <div class="k-meaning" id="kpi-profit-month-meaning">—</div>
+    </div>
+    <div class="kpi accent" id="kpi-bep">
+      <div class="k-label">Точка безубыточности</div>
+      <div class="k-term">Минимальное количество клиентов в месяц чтобы не работать в убыток</div>
+      <div class="k-val" id="kpi-bep-val">—</div>
+      <div class="k-usd" style="color:var(--accent-text)" id="kpi-bep-sub">клиентов / мес</div>
+      <div class="k-meaning" id="kpi-bep-meaning">—</div>
+    </div>
+  </div>
+
+  <!-- P&L ТАБЛИЦА -->
+  <div class="block-title">P&L — Доходы и затраты</div>
+  <table class="pl-table">
+    <thead>
+      <tr>
+        <th class="col-label" style="width:38%">Показатель</th>
+        <th>Факт: <span id="fact-n-hdr">2</span> кл. (₴)</th>
+        <th>Факт ($)</th>
+        <th>План: <span id="plan-n-hdr">6</span> кл. (₴)</th>
+        <th>План ($)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- ДОХОДЫ -->
+      <tr class="sec-row"><td colspan="5"><span class="sec-label">▸ Доходы</span></td></tr>
+      <tr>
+        <td class="row-label">Выручка<span class="hint">Объём (кг) × цена за кг</span></td>
+        <td class="val" id="rev-f-uah">—</td>
+        <td class="val" id="rev-f-usd">—</td>
+        <td class="val" id="rev-p-uah">—</td>
+        <td class="val" id="rev-p-usd">—</td>
+      </tr>
+
+      <!-- БЛОК 1 СЕБЕСТОИМОСТЬ -->
+      <tr class="sec-row"><td colspan="5"><span class="sec-label">▸ Блок 1 — Себестоимость привлечённых клиентов</span></td></tr>
+      <tr class="indent-row">
+        <td class="row-label">Себестоимость товара<span class="hint">Выручка × <span id="cogs-pct-hint">55</span>%</span></td>
+        <td class="val" id="cogs-f-uah">—</td><td class="val" id="cogs-f-usd">—</td>
+        <td class="val" id="cogs-p-uah">—</td><td class="val" id="cogs-p-usd">—</td>
+      </tr>
+      <tr class="indent-row">
+        <td class="row-label">Доставка до клиента<span class="hint" id="del-hint">за заказ</span></td>
+        <td class="val" id="del-f-uah">—</td><td class="val" id="del-f-usd">—</td>
+        <td class="val" id="del-p-uah">—</td><td class="val" id="del-p-usd">—</td>
+      </tr>
+      <tr class="total-row">
+        <td class="row-label">Итого себестоимость</td>
+        <td class="val" id="tot-cogs-f-uah">—</td><td class="val" id="tot-cogs-f-usd">—</td>
+        <td class="val" id="tot-cogs-p-uah">—</td><td class="val" id="tot-cogs-p-usd">—</td>
+      </tr>
+      <tr class="margin-row">
+        <td class="row-label">★ Маржа<span class="hint">Выручка − себестоимость. Это то, что остаётся до затрат на привлечение</span></td>
+        <td class="val" id="mar-f-uah">—</td><td class="val" id="mar-f-usd">—</td>
+        <td class="val" id="mar-p-uah">—</td><td class="val" id="mar-p-usd">—</td>
+      </tr>
+
+      <!-- БЛОК 2 ПРИВЛЕЧЕНИЕ -->
+      <tr class="sec-row"><td colspan="5"><span class="sec-label">▸ Блок 2 — Привлечение клиента (CAC)</span></td></tr>
+      <tr class="indent-row">
+        <td class="row-label">Менеджер — зарплата<span class="hint" id="mgr-hint">Оклад/почасовка ÷ кол-во клиентов</span></td>
+        <td class="val" id="mgr-f-uah">—</td><td class="val" id="mgr-f-usd">—</td>
+        <td class="val" id="mgr-p-uah">—</td><td class="val" id="mgr-p-usd">—</td>
+      </tr>
+      <tr class="indent-row">
+        <td class="row-label">Менеджер — бонус<span class="hint">% от выручки новых клиентов ÷ кол-во клиентов</span></td>
+        <td class="val" id="bonus-f-uah">—</td><td class="val" id="bonus-f-usd">—</td>
+        <td class="val" id="bonus-p-uah">—</td><td class="val" id="bonus-p-usd">—</td>
+      </tr>
+      <tr class="indent-row">
+        <td class="row-label">Менеджер — транспорт<span class="hint">кол-во × цена ÷ кол-во клиентов</span></td>
+        <td class="val" id="transp-f-uah">—</td><td class="val" id="transp-f-usd">—</td>
+        <td class="val" id="transp-p-uah">—</td><td class="val" id="transp-p-usd">—</td>
+      </tr>
+      <tr class="indent-row">
+        <td class="row-label">Менеджер — чеки на посещения<span class="hint">кол-во × цена ÷ кол-во клиентов</span></td>
+        <td class="val" id="checks-f-uah">—</td><td class="val" id="checks-f-usd">—</td>
+        <td class="val" id="checks-p-uah">—</td><td class="val" id="checks-p-usd">—</td>
+      </tr>
+      <tr class="indent-row" id="bar-row">
+        <td class="row-label">Бариста / тех. менеджер<span class="hint">Стоимость дегустаций ÷ кол-во клиентов</span></td>
+        <td class="val" id="bar-f-uah">—</td><td class="val" id="bar-f-usd">—</td>
+        <td class="val" id="bar-p-uah">—</td><td class="val" id="bar-p-usd">—</td>
+      </tr>
+      <tr class="indent-row">
+        <td class="row-label">Сырьё для дегустаций<span class="hint">Расход × цена × дегустаций ÷ клиентов</span></td>
+        <td class="val" id="raw-f-uah">—</td><td class="val" id="raw-f-usd">—</td>
+        <td class="val" id="raw-p-uah">—</td><td class="val" id="raw-p-usd">—</td>
+      </tr>
+      <tr class="total-row">
+        <td class="row-label">Итого затраты на привлечение / мес</td>
+        <td class="val" id="att-f-uah">—</td><td class="val" id="att-f-usd">—</td>
+        <td class="val" id="att-p-uah">—</td><td class="val" id="att-p-usd">—</td>
+      </tr>
+      <tr class="cac-row">
+        <td class="row-label">★ CAC — стоимость привлечения 1 клиента<span class="hint">Все затраты на привлечение ÷ кол-во клиентов. Чем меньше — тем лучше</span></td>
+        <td class="val" id="cac-f-uah">—</td><td class="val" id="cac-f-usd">—</td>
+        <td class="val" id="cac-p-uah">—</td><td class="val" id="cac-p-usd">—</td>
+      </tr>
+
+      <!-- ИТОГ -->
+      <tr class="sec-row"><td colspan="5"><span class="sec-label">▸ Итоговые показатели</span></td></tr>
+      <tr id="profit1-row" class="profit-row">
+        <td class="row-label">★ Прибыль / убыток на 1 клиента<span class="hint">Маржа − CAC. Плюс = клиент окупился, минус = убыток</span></td>
+        <td class="val" id="prof1-f-uah">—</td><td class="val" id="prof1-f-usd">—</td>
+        <td class="val" id="prof1-p-uah">—</td><td class="val" id="prof1-p-usd">—</td>
+      </tr>
+      <tr id="profit-month-row" class="profit-row">
+        <td class="row-label">★ Прибыль / убыток за месяц (все клиенты)<span class="hint">Маржа всех клиентов − все затраты на привлечение</span></td>
+        <td class="val" id="profm-f-uah">—</td><td class="val" id="profm-f-usd">—</td>
+        <td class="val" id="profm-p-uah">—</td><td class="val" id="profm-p-usd">—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- LTV ТАБЛИЦА -->
+  <div class="block-title ltv-section">LTV — Жизненный цикл клиента</div>
+  <table class="pl-table">
+    <thead>
+      <tr>
+        <th class="col-label" style="width:38%">Показатель</th>
+        <th>Факт: <span id="fact-n-hdr2">2</span> кл. (₴)</th>
+        <th>Факт ($)</th>
+        <th>План: <span id="plan-n-hdr2">6</span> кл. (₴)</th>
+        <th>План ($)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-label">Всего заказов за срок жизни<span class="hint">Частота/год ÷ 12 × месяцев жизни. Включает первый заказ</span></td>
+        <td class="val" id="ltv-orders-val" colspan="4" style="text-align:center"></td>
+      </tr>
+      <tr>
+        <td class="row-label">Выручка за срок жизни<span class="hint">Все заказы × средний чек</span></td>
+        <td class="val" id="ltv-rev-f-uah">—</td><td class="val" id="ltv-rev-f-usd">—</td>
+        <td class="val" id="ltv-rev-p-uah">—</td><td class="val" id="ltv-rev-p-usd">—</td>
+      </tr>
+      <tr>
+        <td class="row-label">Себестоимость за срок жизни<span class="hint">Выручка за срок × себестоимость%</span></td>
+        <td class="val" id="ltv-cogs-f-uah">—</td><td class="val" id="ltv-cogs-f-usd">—</td>
+        <td class="val" id="ltv-cogs-p-uah">—</td><td class="val" id="ltv-cogs-p-usd">—</td>
+      </tr>
+      <tr class="cac-row">
+        <td class="row-label">★ LTV — суммарная маржа за весь срок<span class="hint">Маржа 1-го заказа + маржа всех повторных. Это всё что клиент принесёт за время работы с нами</span></td>
+        <td class="val" id="ltv-f-uah">—</td><td class="val" id="ltv-f-usd">—</td>
+        <td class="val" id="ltv-p-uah">—</td><td class="val" id="ltv-p-usd">—</td>
+      </tr>
+      <tr id="ltv-profit-row" class="profit-row">
+        <td class="row-label">★ LTV − CAC (чистая прибыль с клиента)<span class="hint">Сколько зарабатываем с клиента за всё время за вычетом затрат на его привлечение</span></td>
+        <td class="val" id="ltvcac-f-uah">—</td><td class="val" id="ltvcac-f-usd">—</td>
+        <td class="val" id="ltvcac-p-uah">—</td><td class="val" id="ltvcac-p-usd">—</td>
+      </tr>
+      <tr class="total-row">
+        <td class="row-label">LTV / CAC<span class="hint">Показывает: LTV в N раз больше CAC. Норма — от 3×: на каждую единицу вложений в привлечение получаем 3 единицы маржи за срок жизни клиента. Ниже 1× — убыток, снижайте CAC или увеличивайте повторные продажи</span></td>
+        <td class="val" id="ltvcac-ratio-f" colspan="2" style="text-align:center;font-size:15px"></td>
+        <td class="val" id="ltvcac-ratio-p" colspan="2" style="text-align:center;font-size:15px"></td>
+      </tr>
+      <tr>
+        <td class="row-label">Окупаемость — на каком заказе выходим в плюс<span class="hint">CAC ÷ маржа 1 заказа = сколько заказов нужно чтобы вернуть затраты на привлечение</span></td>
+        <td class="val" id="payback-orders-f" colspan="2" style="text-align:center;font-size:15px"></td>
+        <td class="val" id="payback-orders-p" colspan="2" style="text-align:center;font-size:15px"></td>
+      </tr>
+      <tr>
+        <td class="row-label">Окупаемость — примерно какой месяц<span class="hint">Номер заказа × интервал между заказами (12 мес ÷ частота/год)</span></td>
+        <td class="val" id="payback-month-f" colspan="2" style="text-align:center;font-size:15px"></td>
+        <td class="val" id="payback-month-p" colspan="2" style="text-align:center;font-size:15px"></td>
+      </tr>
+      </tr>
+    </tbody>
+  </table>
+
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+'use strict';
+
+let delivMode = 'pct';
+let mgrMode   = 'salary';
+let baristaOn = true;
+
+/* ── helpers ── */
+function g(id){ return parseFloat(document.getElementById(id)?.value)||0; }
+function s(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+function uah(n){ return Math.round(n).toLocaleString('uk-UA')+' ₴'; }
+function dol(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+function pct(n){ return (n*100).toFixed(1)+'%'; }
+function fx(n){ return n.toFixed(1)+'×'; }
+function rate(){ return g('rate')||45; }
+
+/* ── currency sync ── */
+function syncCurrency(key, changed){
+  const r = rate();
+  if(changed==='uah'){
+    const v = g(key+'-uah');
+    const el = document.getElementById(key+'-usd');
+    if(el) el.value = (v/r).toFixed(2);
+    const el2 = document.getElementById(key+'-usd2');
+    if(el2) el2.value = (v/r).toFixed(2);
+  } else {
+    const el = document.getElementById(key+'-usd') || document.getElementById(key+'-usd2');
+    const v = parseFloat(el?.value)||0;
+    const elUAH = document.getElementById(key+'-uah');
+    if(elUAH) elUAH.value = Math.round(v*r);
+  }
+  calc();
+}
+
+function refreshAllUSD(){
+  const r = rate();
+  ['ord-price','mgr-sal','bar-base','bar-rate','raw-price','ltv-price','del-fix'].forEach(k=>{
+    const uahEl = document.getElementById(k+'-uah');
+    const usdEl = document.getElementById(k+'-usd');
+    if(uahEl && usdEl) usdEl.value = (parseFloat(uahEl.value)||0)/r < 0.01 ? '0' : ((parseFloat(uahEl.value)||0)/r).toFixed(2);
+  });
+}
+
+/* ── mode toggles ── */
+function setDelivMode(m){
+  delivMode = m;
+  document.getElementById('del-pct-block').style.display = m==='pct'?'block':'none';
+  document.getElementById('del-fix-block').style.display = m==='fix'?'block':'none';
+  document.getElementById('del-mode-pct').className = 'toggle-btn'+(m==='pct'?' active':'');
+  document.getElementById('del-mode-fix').className = 'toggle-btn'+(m==='fix'?' active':'');
+  calc();
+}
+
+
+function printPDF() {
+  // Открываем печать в альбомном — в диалоге выбрать "Сохранить как PDF"
+  window.print();
+}
+
+function downloadExcel() {
+  const r     = rate();
+  const factN = Math.round(g('f-clients'));
+  const planN = Math.round(g('f-plan'));
+  const date  = new Date().toLocaleDateString('uk-UA').replace(/\./g,'-');
+
+  // Delivery amount for sheet 1
+  const delAmt = document.getElementById('del-pct-block').style.display !== 'none'
+    ? g('ord-kg') * g('ord-price-uah') * g('del-pct') / 100
+    : g('del-fix-uah');
+  const transp = g('transp-qty') * g('transp-price');
+  const checks = g('checks-qty') * g('checks-price');
+
+  // ── XML helpers ──────────────────────────────────────────────
+  const esc = (v) => String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const NC  = (v, style, formula) => formula
+    ? `<Cell ss:StyleID="${style}"><Data ss:Type="Number">${isNaN(v)?0:+parseFloat(v).toFixed(4)}</Data><NamedCell ss:Name="_"/></Cell>`
+    : `<Cell ss:StyleID="${style}"><Data ss:Type="Number">${isNaN(v)?0:+parseFloat(v).toFixed(4)}</Data></Cell>`;
+  const FC  = (f, style) => `<Cell ss:StyleID="${style}" ss:Formula="${esc(f)}"><Data ss:Type="Number">0</Data></Cell>`;
+  const SC  = (v, style) => `<Cell ss:StyleID="${style}"><Data ss:Type="String">${esc(v)}</Data></Cell>`;
+  const MC  = (v, style, span) => `<Cell ss:StyleID="${style}" ss:MergeAcross="${span-1}"><Data ss:Type="String">${esc(v)}</Data></Cell>`;
+  const E   = () => `<Cell ss:StyleID="lbl"><Data ss:Type="String"></Data></Cell>`;
+  const Row = (...cells) => `<Row>${cells.join('')}</Row>`;
+  const ER  = () => `<Row><Cell ss:StyleID="lbl"/></Row>`;
+
+  // Sheet1 row references (1-based Excel rows)
+  const S1 = "Вводные данные";
+  const b  = (row) => `='${S1}'!R${row}C2`;  // R1C1 style for ss:Formula
+
+  // Row numbers in Sheet1
+  const RW = {
+    rate:4, visits:8, degs:9, clients:10, conv_deg:11, plan:12,
+    ord_kg:16, ord_price:17, cogs_pct:18, del_amt:19,
+    mgr_sal:23, bonus_pct:24, transp:25, checks_:26,
+    bar_base:29, bar_rate:30, bar_hours:31, bar_per_deg:32, bar_month:33,
+    raw_kg:36, raw_price:37, raw_month:38,
+    ltv_months:41, ltv_freq:42, ltv_orders:43, ltv_kg:44, ltv_price:45, ltv_cogs:46
+  };
+  const R = RW;
+
+  // Core formulas (R1C1 notation for ss:Formula)
+  const chek_f     = `=${b(R.ord_kg)}*${b(R.ord_price)}`;
+  const cogs_f     = (n) => `=${b(R.ord_kg)}*${b(R.ord_price)}*${b(R.cogs_pct)}*${n}`;
+  const del_f      = (n) => `=${b(R.del_amt)}*${n}`;
+  const totCogs_f  = (n) => `=(${b(R.ord_kg)}*${b(R.ord_price)}*${b(R.cogs_pct)}+${b(R.del_amt)})*${n}`;
+  const margin_f   = (n) => `=(${b(R.ord_kg)}*${b(R.ord_price)}*(1-${b(R.cogs_pct)})-${b(R.del_amt)})*${n}`;
+  const margin1_f  = `=${b(R.ord_kg)}*${b(R.ord_price)}*(1-${b(R.cogs_pct)})-${b(R.del_amt)}`;
+  const bonus_f    = (n) => `=${b(R.ord_kg)}*${b(R.ord_price)}*${n}*${b(R.bonus_pct)}`;
+  const attPool_f  = (n) => `=${b(R.mgr_sal)}+${b(R.ord_kg)}*${b(R.ord_price)}*${n}*${b(R.bonus_pct)}+${b(R.transp)}+${b(R.checks_)}+${b(R.bar_month)}+${b(R.raw_month)}`;
+  const cac_f      = (n) => `=IF(${n}>0,(${attPool_f(n)})/${n},0)`;
+  const ltv_f      = `=${b(R.ltv_orders)}*${b(R.ltv_kg)}*${b(R.ltv_price)}*(1-${b(R.ltv_cogs)})`;
+  const ltvRev_f   = (n) => `=${b(R.ltv_orders)}*${b(R.ltv_kg)}*${b(R.ltv_price)}*${n}`;
+  const ltvCogs_f  = (n) => `=${b(R.ltv_orders)}*${b(R.ltv_kg)}*${b(R.ltv_price)}*${b(R.ltv_cogs)}*${n}`;
+  const ltvNet_f   = (n) => `=${b(R.ltv_orders)}*${b(R.ltv_kg)}*${b(R.ltv_price)}*(1-${b(R.ltv_cogs)})*${n}`;
+  const ltvCac_f   = (n) => `=IF((${cac_f(n)})>0,(${ltv_f})/(${cac_f(n)}),0)`;
+  const prof1_f    = (n) => `=${margin1_f}-(${cac_f(n)})`;
+  const profM_f    = (n) => `=(${margin_f(n)})-(${attPool_f(n)})`;
+  const ltvMin_f   = (n) => `=(${ltv_f})-(${cac_f(n)})`;
+  const usd        = (f)  => `=(${f})/${b(R.rate)}`;
+
+  // Profit style selector (computed, not formula-based)
+  const chek_v     = g('ord-kg')*g('ord-price-uah');
+  const margin1_v  = chek_v*(1-g('cogs-pct')/100)-delAmt;
+  const attPoolF_v = g('mgr-sal-uah')+chek_v*factN*g('mgr-bonus-pct')/100+transp+checks+(g('bar-base-uah')+g('bar-rate-uah')*g('bar-hours'))*g('f-degs')+g('raw-kg')*g('raw-price-uah')*g('f-degs');
+  const attPoolP_v = g('mgr-sal-uah')+chek_v*planN*g('mgr-bonus-pct')/100+transp+checks+(g('bar-base-uah')+g('bar-rate-uah')*g('bar-hours'))*g('f-degs')+g('raw-kg')*g('raw-price-uah')*g('f-degs');
+  const cacF_v     = factN>0?attPoolF_v/factN:0;
+  const cacP_v     = planN>0?attPoolP_v/planN:0;
+  const pF1_v      = margin1_v - cacF_v;
+  const pP1_v      = margin1_v - cacP_v;
+  const pMF_v      = margin1_v*factN - attPoolF_v;
+  const pMP_v      = margin1_v*planN - attPoolP_v;
+  const ltv_v      = (g('ltv-freq')/12*g('ltv-months'))*g('ltv-kg')*g('ltv-price-uah')*(1-g('ltv-cogs')/100);
+  const lMF_v      = ltv_v - cacF_v;
+  const lMP_v      = ltv_v - cacP_v;
+  const pS         = (v) => v>=0 ? 'uah_good' : 'uah_bad';
+  const pSU        = (v) => v>=0 ? 'usd_good' : 'usd_bad';
+
+  // ── Стили ────────────────────────────────────────────────────
+  const styles = `
+  <Style ss:ID="hdr"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="12"/><Interior ss:Color="#1F3864" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/></Style>
+  <Style ss:ID="sec"><Font ss:Bold="1" ss:Color="#1F3864" ss:Size="10"/><Interior ss:Color="#D6E4F7" ss:Pattern="Solid"/><Alignment ss:Horizontal="Left" ss:Vertical="Center" ss:WrapText="1"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#9E9E9E"/></Borders></Style>
+  <Style ss:ID="lbl"><Font ss:Color="#374151" ss:Size="10"/><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Left" ss:Vertical="Center" ss:WrapText="1"/></Style>
+  <Style ss:ID="col_hdr"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="9"/><Interior ss:Color="#2E6DB4" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/></Style>
+  <Style ss:ID="inp_n"><Font ss:Bold="1" ss:Color="#0000CC" ss:Size="10"/><Interior ss:Color="#FFF9C4" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.##"/></Style>
+  <Style ss:ID="inp_uah"><Font ss:Bold="1" ss:Color="#0000CC" ss:Size="10"/><Interior ss:Color="#FFF9C4" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0 &quot;₴&quot;"/></Style>
+  <Style ss:ID="inp_pct"><Font ss:Bold="1" ss:Color="#0000CC" ss:Size="10"/><Interior ss:Color="#FFF9C4" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="0.0%"/></Style>
+  <Style ss:ID="calc_uah"><Font ss:Size="10"/><Interior ss:Color="#EBF3FB" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0 &quot;₴&quot;"/></Style>
+  <Style ss:ID="calc_usd"><Font ss:Size="10"/><Interior ss:Color="#E8F5E9" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="&quot;$&quot;#,##0.00"/></Style>
+  <Style ss:ID="calc_pct"><Font ss:Size="10"/><Interior ss:Color="#EBF3FB" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="0.0%"/></Style>
+  <Style ss:ID="calc_n"><Font ss:Size="10"/><Interior ss:Color="#EBF3FB" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0.0"/></Style>
+  <Style ss:ID="tot_uah"><Font ss:Bold="1" ss:Size="10"/><Interior ss:Color="#FFF3CD" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0 &quot;₴&quot;"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#D97706"/></Borders></Style>
+  <Style ss:ID="tot_usd"><Font ss:Bold="1" ss:Size="10"/><Interior ss:Color="#FFF3CD" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="&quot;$&quot;#,##0.00"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#D97706"/></Borders></Style>
+  <Style ss:ID="good_uah"><Font ss:Bold="1" ss:Color="#15803D" ss:Size="10"/><Interior ss:Color="#E8F7EE" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0 &quot;₴&quot;"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#86EFAC"/></Borders></Style>
+  <Style ss:ID="good_usd"><Font ss:Bold="1" ss:Color="#15803D" ss:Size="10"/><Interior ss:Color="#E8F7EE" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="&quot;$&quot;#,##0.00"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#86EFAC"/></Borders></Style>
+  <Style ss:ID="bad_uah"><Font ss:Bold="1" ss:Color="#DC2626" ss:Size="10"/><Interior ss:Color="#FEF2F2" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0 &quot;₴&quot;"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#FCA5A5"/></Borders></Style>
+  <Style ss:ID="bad_usd"><Font ss:Bold="1" ss:Color="#DC2626" ss:Size="10"/><Interior ss:Color="#FEF2F2" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="&quot;$&quot;#,##0.00"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#FCA5A5"/></Borders></Style>
+  <Style ss:ID="cac_uah"><Font ss:Bold="1" ss:Color="#1D4ED8" ss:Size="10"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="#,##0 &quot;₴&quot;"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#BFDBFE"/></Borders></Style>
+  <Style ss:ID="cac_usd"><Font ss:Bold="1" ss:Color="#1D4ED8" ss:Size="10"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><NumberFormat ss:Format="&quot;$&quot;#,##0.00"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#BFDBFE"/></Borders></Style>
+  <Style ss:ID="hi"><Font ss:Bold="1" ss:Color="#1D4ED8" ss:Size="11"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/></Style>
+  <Style ss:ID="ratio"><Font ss:Bold="1" ss:Size="11"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><NumberFormat ss:Format='0.0"×"'/></Style>
+  `;
+
+  // ── SHEET 1: Вводные данные ──────────────────────────────────
+  // Rows match RW object above (1-based)
+  const factNv = factN; const planNv = planN;
+  const sh1 = `<Worksheet ss:Name="Вводные данные">
+    <Table ss:DefaultColumnWidth="18" ss:DefaultRowHeight="18">
+      <Column ss:Width="220"/><Column ss:Width="130"/><Column ss:Width="110"/>
+      ${Row(MC('ВВОДНЫЕ ДАННЫЕ — CAC Калькулятор', 'hdr', 3))}
+      ${Row(SC('Параметр','col_hdr'), SC('Значение','col_hdr'), SC('Ед. / Комментарий','col_hdr'))}
+      ${ER()}
+      ${Row(SC('КУРС ВАЛЮТ','sec'), SC('','sec'), SC('','sec'))}
+      ${Row(SC('Курс USD/UAH','lbl'), NC(g('rate'),'inp_n'), SC('грн/$','lbl'))}
+      ${ER()}
+      ${Row(SC('ВОРОНКА ПРОДАЖ','sec'), SC('Кол-во','sec'), SC('%','sec'))}
+      ${Row(SC('Точек обошли','lbl'), NC(g('f-visits'),'inp_n'), SC('100%','lbl'))}
+      ${Row(SC('Назначено дегустаций','lbl'), NC(g('f-degs'),'inp_n'), FC(`=IF(R${R.visits}C2>0,R${R.degs}C2/R${R.visits}C2,0)`,'calc_pct'))}
+      ${Row(SC('Конверсия дег → клиенты','lbl'), FC(`=IF(R${R.degs}C2>0,R${R.clients}C2/R${R.degs}C2,0)`,'calc_pct'), SC('от дегустаций','lbl'))}
+      ${Row(SC('Клиентов привлечено (факт)','lbl'), NC(g('f-clients'),'inp_n'), SC('шт','lbl'))}
+      ${Row(SC('Плановое кол-во клиентов','lbl'), NC(g('f-plan'),'inp_n'), SC('сценарий','lbl'))}
+      ${ER()}
+      ${Row(SC('ЗАКАЗ КЛИЕНТА','sec'), SC('','sec'), SC('','sec'))}
+      ${Row(SC('Объём заказа, кг','lbl'), NC(g('ord-kg'),'inp_n'), SC('кг','lbl'))}
+      ${Row(SC('Цена 1 кг, грн','lbl'), NC(g('ord-price-uah'),'inp_uah'), FC(`=R${R.ord_price}C2/R${R.rate}C2`,'calc_usd'))}
+      ${Row(SC('Себестоимость товара, %','lbl'), NC(g('cogs-pct')/100,'inp_pct'), SC('от выручки','lbl'))}
+      ${Row(SC('Доставка за заказ, грн','lbl'), NC(delAmt,'inp_uah'), FC(`=R${R.del_amt}C2/R${R.rate}C2`,'calc_usd'))}
+      ${ER()}
+      ${Row(SC('МЕНЕДЖЕР ПО ПРОДАЖАМ','sec'), SC('','sec'), SC('','sec'))}
+      ${Row(SC('Оклад / месяц, грн','lbl'), NC(g('mgr-sal-uah'),'inp_uah'), FC(`=R${R.mgr_sal}C2/R${R.rate}C2`,'calc_usd'))}
+      ${Row(SC('Бонус от выручки, %','lbl'), NC(g('mgr-bonus-pct')/100,'inp_pct'), SC('от выручки новых кл.','lbl'))}
+      ${Row(SC('Транспортные расходы, грн','lbl'), NC(transp,'inp_uah'), FC(`=R${R.transp}C2/R${R.rate}C2`,'calc_usd'))}
+      ${Row(SC('Чеки на посещения, грн','lbl'), NC(checks,'inp_uah'), FC(`=R${R.checks_}C2/R${R.rate}C2`,'calc_usd'))}
+      ${ER()}
+      ${Row(SC('БАРИСТА / ТЕХ. МЕНЕДЖЕР','sec'), SC('','sec'), SC('','sec'))}
+      ${Row(SC('Базовая ставка за выход, грн','lbl'), NC(g('bar-base-uah'),'inp_uah'), FC(`=R${R.bar_base}C2/R${R.rate}C2`,'calc_usd'))}
+      ${Row(SC('Ставка за доп. час, грн','lbl'), NC(g('bar-rate-uah'),'inp_uah'), FC(`=R${R.bar_rate}C2/R${R.rate}C2`,'calc_usd'))}
+      ${Row(SC('Доп. часов на 1 дегустацию','lbl'), NC(g('bar-hours'),'inp_n'), SC('часов','lbl'))}
+      ${Row(SC('Стоимость 1 дегустации (бариста)','lbl'), FC(`=R${R.bar_base}C2+R${R.bar_rate}C2*R${R.bar_hours}C2`,'calc_uah'), FC(`=(R${R.bar_base}C2+R${R.bar_rate}C2*R${R.bar_hours}C2)/R${R.rate}C2`,'calc_usd'))}
+      ${Row(SC('Итого бариста / мес','sec'), FC(`=(R${R.bar_base}C2+R${R.bar_rate}C2*R${R.bar_hours}C2)*R${R.degs}C2`,'tot_uah'), FC(`=(R${R.bar_base}C2+R${R.bar_rate}C2*R${R.bar_hours}C2)*R${R.degs}C2/R${R.rate}C2`,'tot_usd'))}
+      ${ER()}
+      ${Row(SC('СЫРЬЁ ДЛЯ ДЕГУСТАЦІЙ','sec'), SC('','sec'), SC('','sec'))}
+      ${Row(SC('Розхід на 1 дегустацію, кг','lbl'), NC(g('raw-kg'),'inp_n'), SC('кг','lbl'))}
+      ${Row(SC('Ціна 1 кг сировини, грн','lbl'), NC(g('raw-price-uah'),'inp_uah'), FC(`=R${R.raw_price}C2/R${R.rate}C2`,'calc_usd'))}
+      ${Row(SC('Итого сырьё / мес','sec'), FC(`=R${R.raw_kg}C2*R${R.raw_price}C2*R${R.degs}C2`,'tot_uah'), FC(`=R${R.raw_kg}C2*R${R.raw_price}C2*R${R.degs}C2/R${R.rate}C2`,'tot_usd'))}
+      ${ER()}
+      ${Row(SC('LTV — ПОВТОРНІ ЗАМОВЛЕННЯ','sec'), SC('','sec'), SC('','sec'))}
+      ${Row(SC('Срок жизни клиента','lbl'), NC(g('ltv-months'),'inp_n'), SC('мес','lbl'))}
+      ${Row(SC('Частота закупок в год','lbl'), NC(g('ltv-freq'),'inp_n'), SC('раз/год','lbl'))}
+      ${Row(SC('Всего заказов за срок жизни','lbl'), FC(`=R${R.ltv_freq}C2/12*R${R.ltv_months}C2`,'calc_n'), SC('вкл. первый','lbl'))}
+      ${Row(SC('Объём повторного заказа, кг','lbl'), NC(g('ltv-kg'),'inp_n'), SC('кг','lbl'))}
+      ${Row(SC('Цена повторного заказа, грн/кг','lbl'), NC(g('ltv-price-uah'),'inp_uah'), FC(`=R${R.ltv_price}C2/R${R.rate}C2`,'calc_usd'))}
+      ${Row(SC('Себестоимость повторных, %','lbl'), NC(g('ltv-cogs')/100,'inp_pct'), SC('','lbl'))}
+    </Table>
+  </Worksheet>`;
+
+  // ── SHEET 2: P&L с формулами ─────────────────────────────────
+  const FN = String(factNv);
+  const PN = String(planNv);
+
+  const sh2 = `<Worksheet ss:Name="P&amp;L Результаты">
+    <Table ss:DefaultColumnWidth="16" ss:DefaultRowHeight="18">
+      <Column ss:Width="210"/><Column ss:Width="130"/><Column ss:Width="105"/>
+      <Column ss:Width="130"/><Column ss:Width="105"/>
+      ${Row(MC(`P&L — Факт: ${FN} кл. / План: ${PN} кл. | ${date}`, 'hdr', 5))}
+      ${Row(SC('ПОКАЗАТЕЛЬ','col_hdr'), SC(`Факт: ${FN} кл. (₴)`,'col_hdr'), SC(`Факт ($)`,'col_hdr'), SC(`План: ${PN} кл. (₴)`,'col_hdr'), SC(`План ($)`,'col_hdr'))}
+      ${ER()}
+      ${Row(MC('ВОРОНКА КОНВЕРСИИ','sec',5))}
+      ${Row(SC('Точек обошли','lbl'), FC(b(R.visits),'calc_n'), E(), E(), E())}
+      ${Row(SC('Дегустаций','lbl'), FC(b(R.degs),'calc_n'), FC(`=${b(R.degs).slice(1)}/R${R.visits}C2`,'calc_pct'), E(), E())}
+      ${Row(SC('Клиентов (факт)','lbl'), FC(b(R.clients),'calc_n'), FC(`=${b(R.clients).slice(1)}/R${R.degs}C2`,'calc_pct'), FC(b(R.plan),'calc_n'), SC('план','lbl'))}
+      ${ER()}
+      ${Row(MC('ДОХОДЫ','sec',5))}
+      ${Row(SC('Выручка','lbl'), FC(margin_f(FN).replace(`*(1-${b(R.cogs_pct)})-${b(R.del_amt)}`,'')+chek_f.slice(1)+`*${FN}`,'calc_uah'), FC(usd(`${chek_f.slice(1)}*${FN}`),'calc_usd'), FC(`${chek_f.slice(1)}*${PN}`,'calc_uah'), FC(usd(`${chek_f.slice(1)}*${PN}`),'calc_usd'))}
+      ${ER()}
+      ${Row(MC('БЛОК 1 — СЕБЕСТОИМОСТЬ ПРИВЛЕЧЁННЫХ КЛИЕНТОВ','sec',5))}
+      ${Row(SC('Себестоимость товара','lbl'), FC(cogs_f(FN),'calc_uah'), FC(usd(cogs_f(FN)),'calc_usd'), FC(cogs_f(PN),'calc_uah'), FC(usd(cogs_f(PN)),'calc_usd'))}
+      ${Row(SC('Доставка до клиента','lbl'), FC(del_f(FN),'calc_uah'), FC(usd(del_f(FN)),'calc_usd'), FC(del_f(PN),'calc_uah'), FC(usd(del_f(PN)),'calc_usd'))}
+      ${Row(SC('ИТОГО себестоимость','sec'), FC(totCogs_f(FN),'tot_uah'), FC(usd(totCogs_f(FN)),'tot_usd'), FC(totCogs_f(PN),'tot_uah'), FC(usd(totCogs_f(PN)),'tot_usd'))}
+      ${Row(SC('★ МАРЖА','sec'), FC(margin_f(FN),'good_uah'), FC(usd(margin_f(FN)),'good_usd'), FC(margin_f(PN),'good_uah'), FC(usd(margin_f(PN)),'good_usd'))}
+      ${ER()}
+      ${Row(MC('БЛОК 2 — ПРИВЛЕЧЕНИЕ КЛИЕНТА (CAC)','sec',5))}
+      ${Row(SC('Менеджер — зарплата','lbl'), FC(b(R.mgr_sal),'calc_uah'), FC(usd(b(R.mgr_sal).slice(1)),'calc_usd'), FC(b(R.mgr_sal),'calc_uah'), FC(usd(b(R.mgr_sal).slice(1)),'calc_usd'))}
+      ${Row(SC('Менеджер — бонус','lbl'), FC(bonus_f(FN),'calc_uah'), FC(usd(bonus_f(FN)),'calc_usd'), FC(bonus_f(PN),'calc_uah'), FC(usd(bonus_f(PN)),'calc_usd'))}
+      ${Row(SC('Менеджер — транспорт','lbl'), FC(b(R.transp),'calc_uah'), FC(usd(b(R.transp).slice(1)),'calc_usd'), FC(b(R.transp),'calc_uah'), FC(usd(b(R.transp).slice(1)),'calc_usd'))}
+      ${Row(SC('Менеджер — чеки','lbl'), FC(b(R.checks_),'calc_uah'), FC(usd(b(R.checks_).slice(1)),'calc_usd'), FC(b(R.checks_),'calc_uah'), FC(usd(b(R.checks_).slice(1)),'calc_usd'))}
+      ${Row(SC('Бариста / тех. менеджер','lbl'), FC(b(R.bar_month),'calc_uah'), FC(usd(b(R.bar_month).slice(1)),'calc_usd'), FC(b(R.bar_month),'calc_uah'), FC(usd(b(R.bar_month).slice(1)),'calc_usd'))}
+      ${Row(SC('Сырьё для дегустаций','lbl'), FC(b(R.raw_month),'calc_uah'), FC(usd(b(R.raw_month).slice(1)),'calc_usd'), FC(b(R.raw_month),'calc_uah'), FC(usd(b(R.raw_month).slice(1)),'calc_usd'))}
+      ${Row(SC('ИТОГО затраты привлечение / мес','sec'), FC(attPool_f(FN),'tot_uah'), FC(usd(attPool_f(FN)),'tot_usd'), FC(attPool_f(PN),'tot_uah'), FC(usd(attPool_f(PN)),'tot_usd'))}
+      ${Row(SC('★ CAC — стоимость привлечения 1 клиента','sec'), FC(cac_f(FN),'cac_uah'), FC(usd(cac_f(FN)),'cac_usd'), FC(cac_f(PN),'cac_uah'), FC(usd(cac_f(PN)),'cac_usd'))}
+      ${ER()}
+      ${Row(MC('ИТОГОВЫЕ ПОКАЗАТЕЛИ','sec',5))}
+      ${Row(SC('★ Прибыль / убыток на 1 клиента','sec'), FC(prof1_f(FN),pS(pF1_v)), FC(usd(prof1_f(FN)),pSU(pF1_v)), FC(prof1_f(PN),pS(pP1_v)), FC(usd(prof1_f(PN)),pSU(pP1_v)))}
+      ${Row(SC('★ Прибыль / убыток за месяц (все клиенты)','sec'), FC(profM_f(FN),pS(pMF_v)), FC(usd(profM_f(FN)),pSU(pMF_v)), FC(profM_f(PN),pS(pMP_v)), FC(usd(profM_f(PN)),pSU(pMP_v)))}
+      ${Row(SC('Точка безубыточности','lbl'), `<Cell ss:StyleID="hi" ss:MergeAcross="3" ss:Formula="=IF((${b(R.ord_kg).slice(1)}*${b(R.ord_price).slice(1)}*(1-${b(R.cogs_pct).slice(1)})-${b(R.del_amt).slice(1)})>0,CEILING((${attPool_f(FN)})/(${b(R.ord_kg).slice(1)}*${b(R.ord_price).slice(1)}*(1-${b(R.cogs_pct).slice(1)})-${b(R.del_amt).slice(1)}),1),0)"><Data ss:Type="Number">0</Data></Cell>`)}
+      ${ER()}
+      ${Row(MC('LTV — ЖИЗНЕННЫЙ ЦИКЛ КЛИЕНТА','sec',5))}
+      ${Row(SC('Всего заказов за срок жизни','lbl'), FC(b(R.ltv_orders),'calc_n'), E(), E(), E())}
+      ${Row(SC('Выручка за срок жизни','lbl'), FC(ltvRev_f(FN),'calc_uah'), FC(usd(ltvRev_f(FN)),'calc_usd'), FC(ltvRev_f(PN),'calc_uah'), FC(usd(ltvRev_f(PN)),'calc_usd'))}
+      ${Row(SC('Себестоимость за срок жизни','lbl'), FC(ltvCogs_f(FN),'calc_uah'), FC(usd(ltvCogs_f(FN)),'calc_usd'), FC(ltvCogs_f(PN),'calc_uah'), FC(usd(ltvCogs_f(PN)),'calc_usd'))}
+      ${Row(SC('★ LTV — суммарная маржа','sec'), FC(ltvNet_f(FN),'good_uah'), FC(usd(ltvNet_f(FN)),'good_usd'), FC(ltvNet_f(PN),'good_uah'), FC(usd(ltvNet_f(PN)),'good_usd'))}
+      ${Row(SC('★ LTV − CAC (чистая прибыль)','sec'), FC(ltvMin_f(FN)+'*'+FN,pS(lMF_v)), FC(usd(ltvMin_f(FN)+'*'+FN),pSU(lMF_v)), FC(ltvMin_f(PN)+'*'+PN,pS(lMP_v)), FC(usd(ltvMin_f(PN)+'*'+PN),pSU(lMP_v)))}
+      ${Row(SC('LTV / CAC (норма от 3×)','lbl'), FC(ltvCac_f(FN),'ratio'), E(), FC(ltvCac_f(PN),'ratio'), E())}
+    </Table>
+  </Worksheet>`;
+
+  // ── Собрать и скачать ─────────────────────────────────────────
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:x="urn:schemas-microsoft-com:office:excel">
+  <Styles>${styles}</Styles>
+  ${sh1}
+  ${sh2}
+</Workbook>`;
+
+  const blob = new Blob([xml], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `CAC_Расчёт_${date}.xls`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+
+function syncHourly(){
+  const r = rate();
+  const v = parseFloat(document.getElementById('mgr-sal-uah2').value)||0;
+  document.getElementById('mgr-sal-uah').value = v;
+  const el = document.getElementById('mgr-sal-usd2');
+  if(el) el.value = (v/r).toFixed(2);
+  document.getElementById('mgr-sal-usd').value = (v/r).toFixed(2);
+  calc();
+}
+function syncHourly2(){
+  const r = rate();
+  const v = parseFloat(document.getElementById('mgr-sal-usd2').value)||0;
+  const uah = Math.round(v*r);
+  document.getElementById('mgr-sal-uah2').value = uah;
+  document.getElementById('mgr-sal-uah').value  = uah;
+  document.getElementById('mgr-sal-usd').value  = v.toFixed(2);
+  calc();
+}
+
+function setMgrMode(m){
+  mgrMode = m;
+  document.getElementById('mgr-salary-block').style.display = m==='salary'?'block':'none';
+  document.getElementById('mgr-hourly-block').style.display = m==='hourly'?'block':'none';
+  document.getElementById('mgr-mode-salary').className = 'toggle-btn'+(m==='salary'?' active':'');
+  document.getElementById('mgr-mode-hourly').className = 'toggle-btn'+(m==='hourly'?' active':'');
+  calc();
+}
+
+function setBarista(on){
+  baristaOn = on;
+  document.getElementById('barista-block').style.display = on?'block':'none';
+  document.getElementById('bar-on').className  = 'toggle-btn'+(on?' active':'');
+  document.getElementById('bar-off').className = 'toggle-btn'+(!on?' active':'');
+  document.getElementById('bar-row').style.display = on?'':'none';
+  calc();
+}
+
+/* ── funnel ── */
+function calcFunnel(source){
+  const visits = g('f-visits');
+  let degs = g('f-degs');
+  let degsPct = g('f-degs-pct');
+  let clients = g('f-clients');
+  let clientsPct = g('f-clients-pct');
+
+  if(source==='degs-n'){
+    degsPct = visits>0 ? Math.round(degs/visits*100) : 0;
+    document.getElementById('f-degs-pct').value = degsPct;
+  } else if(source==='degs-p'){
+    degs = Math.round(visits*degsPct/100);
+    document.getElementById('f-degs').value = degs;
+  } else if(source==='cli-n'){
+    clientsPct = visits>0 ? Math.round(clients/visits*100) : 0;
+    document.getElementById('f-clients-pct').value = clientsPct;
+  } else if(source==='cli-p'){
+    clients = Math.round(visits*clientsPct/100);
+    document.getElementById('f-clients').value = clients;
+  } else if(source==='visits'){
+    degsPct = visits>0 ? Math.round(degs/visits*100) : 0;
+    clientsPct = visits>0 ? Math.round(clients/visits*100) : 0;
+    document.getElementById('f-degs-pct').value = degsPct;
+    document.getElementById('f-clients-pct').value = clientsPct;
+  }
+  s('f-visits-pct','100%');
+  calc();
+}
+
+/* ── main calc ── */
+function calc(){
+  const r = rate();
+  refreshAllUSD();
+
+  const degs    = g('f-degs');
+  const clients = g('f-clients');
+  const plan    = g('f-plan');
+  const ordKg   = g('ord-kg');
+  const ordPrUAH= g('ord-price-uah');
+  const cogsPct = g('cogs-pct')/100;
+
+  // delivery
+  let delPerOrder = 0;
+  if(delivMode==='pct'){
+    delPerOrder = ordKg*ordPrUAH * g('del-pct')/100;
+    s('del-hint', g('del-pct')+'% от суммы заказа');
+  } else {
+    delPerOrder = g('del-fix-uah');
+    s('del-hint','фиксированная сумма');
+  }
+
+  // revenue per client
+  const chek = ordKg * ordPrUAH;
+
+  // cogs
+  const cogsAmt = chek * cogsPct;
+  const delAmt  = delPerOrder;
+  const totCogs = cogsAmt + delAmt;
+  const margin1 = chek - totCogs;
+
+  // sidebar cogs total
+  s('tot-cogs-uah', uah(totCogs)); s('tot-cogs-usd', dol(totCogs/r));
+  s('cogs-pct-hint', Math.round(cogsPct*100));
+
+  // manager salary
+  let mgrSalaryUAH = 0;
+  let mgrHintTxt = '';
+  const mgrSalUAH = g('mgr-sal-uah');
+  if(mgrMode==='salary'){
+    mgrSalaryUAH = mgrSalUAH;
+    mgrHintTxt = 'Полный оклад ÷ кол-во клиентов';
+  } else {
+    const days = g('mgr-days')||20;
+    const hDay = g('mgr-hours-day')||8;
+    const hDeg = g('mgr-hours-deg')||2;
+    const hourRate = mgrSalUAH/(days*hDay);
+    mgrSalaryUAH = hourRate * hDeg * degs;
+    s('mgr-hour-rate-uah', uah(hourRate)+'/ч');
+    s('mgr-hour-rate-usd', dol(hourRate/r)+'/ч');
+    mgrHintTxt = 'Стоимость часа × часов на дег × дегустаций';
+  }
+
+  // bonus = % от выручки всех привлечённых клиентов месяца
+  const bonusPct    = g('mgr-bonus-pct')/100;
+  const revAllFact  = chek * clients;
+  const bonusAmt    = revAllFact * bonusPct;
+  s('mgr-bonus-amt-s', uah(bonusAmt));
+
+  // transport
+  const transpTotal = g('transp-qty') * g('transp-price');
+  s('transp-total-s', uah(transpTotal));
+
+  // checks
+  const checksTotal = g('checks-qty') * g('checks-price');
+  s('checks-total-s', uah(checksTotal));
+
+  // total manager month
+  const mgrMonthUAH = mgrSalaryUAH + bonusAmt + transpTotal + checksTotal;
+  s('tot-mgr-uah', uah(mgrMonthUAH)); s('tot-mgr-usd', dol(mgrMonthUAH/r));
+  document.getElementById('mgr-hint').textContent = mgrHintTxt;
+
+  // barista
+  let barMonthUAH = 0;
+  let barPerDeg   = 0;
+  if(baristaOn){
+    const barBase = g('bar-base-uah');
+    const barRate = g('bar-rate-uah');
+    const barHrs  = g('bar-hours');
+    barPerDeg   = barBase + barRate * barHrs;
+    barMonthUAH = barPerDeg * degs;
+    s('bar-per-deg-uah', uah(barPerDeg)); s('bar-per-deg-usd', dol(barPerDeg/r));
+  }
+  s('tot-bar-uah', uah(barMonthUAH)); s('tot-bar-usd', dol(barMonthUAH/r));
+
+  // raw material
+  const rawKg    = g('raw-kg');
+  const rawPrUAH = g('raw-price-uah');
+  const rawPerDeg= rawKg * rawPrUAH;
+  const rawMonth = rawPerDeg * degs;
+  s('tot-raw-uah', uah(rawMonth)); s('tot-raw-usd', dol(rawMonth/r));
+
+  // total attraction pool
+  const attPool = mgrMonthUAH + barMonthUAH + rawMonth;
+  s('tot-att-uah', uah(attPool)); s('tot-att-usd', dol(attPool/r));
+
+  // CAC
+  const cac1 = clients>0 ? attPool/clients : 0;
+  const cacP = plan>0    ? attPool/plan    : 0;
+
+  // profit per client
+  const prof1_1 = margin1 - cac1;
+  const prof1_p = margin1 - cacP;
+
+  // profit month (all clients)
+  const profM_fact  = margin1*clients - attPool;
+  const profM_plan  = margin1*plan    - attPool;
+
+  // BEP
+  const bep = margin1>0 ? Math.ceil(attPool/margin1) : 0;
+
+  // ── fill P&L table ──
+  const fill  = (id1,idUSD,v) => { s(id1,uah(v)); s(idUSD,dol(v/r)); };
+  const fillF = (idUAH,idUSD,v) => { s(idUAH,uah(v)); s(idUSD,dol(v/r)); };
+
+  // revenue
+  fillF('rev-f-uah','rev-f-usd', chek*clients);
+  fill('rev-p-uah','rev-p-usd', chek*plan);
+
+  // cogs
+  fillF('cogs-f-uah','cogs-f-usd', cogsAmt*clients);
+  fill('cogs-p-uah','cogs-p-usd', cogsAmt*plan);
+  fillF('del-f-uah','del-f-usd',  delAmt*clients);
+  fill('del-p-uah','del-p-usd',   delAmt*plan);
+  fillF('tot-cogs-f-uah','tot-cogs-f-usd', totCogs*clients);
+  fill('tot-cogs-p-uah','tot-cogs-p-usd', totCogs*plan);
+  fillF('mar-f-uah','mar-f-usd',  margin1*clients);
+  fill('mar-p-uah','mar-p-usd',   margin1*plan);
+
+  // Колонка «1 клиент» = весь пул затрат ÷ 1 (показываем полную стоимость привлечения)
+  // Колонка «план» = весь пул ÷ плановое кол-во клиентов
+  // Бонус для колонки «план» считается от плановой выручки
+  const bonusAmtPlan = plan>0 ? chek*plan*g('mgr-bonus-pct')/100 : 0;
+
+  // Пул затрат для колонки «план» (дегустации те же 15, менеджер тот же)
+  // Меняется только бонус — он зависит от кол-ва клиентов
+  const attPoolPlan = mgrSalaryUAH + bonusAmtPlan + transpTotal + checksTotal + barMonthUAH + rawMonth;
+  const cacPlan     = plan>0 ? attPoolPlan/plan : 0;
+
+  // Колонка «1 клиент» и «план» — показываем ВЕСЬ пул затрат (не делим на клиентов)
+  // CAC = пул ÷ клиентов — отдельная строка ниже
+  fill('mgr-1-uah',    'mgr-1-usd',    mgrSalaryUAH);
+  fillF('mgr-f-uah',   'mgr-f-usd',    mgrSalaryUAH);
+  fill('mgr-p-uah',    'mgr-p-usd',    mgrSalaryUAH);
+  fill('bonus-1-uah',  'bonus-1-usd',  bonusAmt);
+  fillF('bonus-f-uah', 'bonus-f-usd',  bonusAmt);
+  fill('bonus-p-uah',  'bonus-p-usd',  bonusAmtPlan);
+  fill('transp-1-uah', 'transp-1-usd', transpTotal);
+  fillF('transp-f-uah','transp-f-usd', transpTotal);
+  fill('transp-p-uah', 'transp-p-usd', transpTotal);
+  fill('checks-1-uah', 'checks-1-usd', checksTotal);
+  fillF('checks-f-uah','checks-f-usd', checksTotal);
+  fill('checks-p-uah', 'checks-p-usd', checksTotal);
+  fill('bar-1-uah',    'bar-1-usd',    barMonthUAH);
+  fillF('bar-f-uah',   'bar-f-usd',    barMonthUAH);
+  fill('bar-p-uah',    'bar-p-usd',    barMonthUAH);
+  fill('raw-1-uah',    'raw-1-usd',    rawMonth);
+  fillF('raw-f-uah',   'raw-f-usd',    rawMonth);
+  fill('raw-p-uah',    'raw-p-usd',    rawMonth);
+  fill('att-1-uah',    'att-1-usd',    attPool);
+  fillF('att-f-uah',   'att-f-usd',    attPool);
+  fill('att-p-uah',    'att-p-usd',    attPoolPlan);
+  fill('cac-1-uah',    'cac-1-usd',    cac1);
+  fillF('cac-f-uah',   'cac-f-usd',    cac1);
+  fill('cac-p-uah',    'cac-p-usd',    cacPlan);
+
+  // profits
+  // прибыль на 1 клиента: маржа - CAC
+  fillF('prof1-f-uah','prof1-f-usd', margin1 - cac1);
+  fill('prof1-p-uah','prof1-p-usd', margin1 - cacPlan);
+  // прибыль за месяц (все клиенты): маржа всех - весь пул
+  fillF('profm-f-uah','profm-f-usd', margin1*clients - attPool);
+  fill('profm-p-uah','profm-p-usd', margin1*plan - attPoolPlan);
+
+  // row colours
+  ['profit1-row','profit-month-row'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.className = 'profit-row';
+  });
+  const prof1_fact = margin1 - cac1;
+  const profM_fact2 = margin1*clients - attPool;
+  document.getElementById('profit1-row').className     = prof1_fact>=0 ? 'profit-good' : 'profit-bad';
+  document.getElementById('profit-month-row').className = profM_fact2>=0 ? 'profit-good' : 'profit-bad';
+
+  // plan headers
+  s('fact-n-hdr',  Math.round(clients));
+  s('fact-n-hdr2', Math.round(clients));
+  s('plan-n-hdr',  Math.round(plan));
+  s('plan-n-hdr2', Math.round(plan));
+
+  // ── ВОРОНКА КОНВЕРСИИ (визуальная) ──────────────────────────────
+  const fnVisits  = g('f-visits');
+  const fnDegs    = g('f-degs');
+  const fnClients = g('f-clients');
+  const fnLost    = Math.max(0, fnDegs - fnClients);
+  const fnDegsP   = fnVisits  > 0 ? Math.round(fnDegs    / fnVisits  * 100) : 0;
+  const fnCliP    = fnVisits  > 0 ? Math.round(fnClients / fnVisits  * 100) : 0;
+  const fnCliDegP = fnDegs    > 0 ? Math.round(fnClients / fnDegs    * 100) : 0;
+  const fnLostP   = fnDegs    > 0 ? Math.round(fnLost    / fnDegs    * 100) : 0;
+
+  s('fn-visits',     fnVisits);
+  s('fn-degs',       fnDegs);
+  s('fn-degs-pct2',  fnDegsP + '% от обходов');
+  s('fn-clients',    fnClients);
+  s('fn-clients-pct2', fnCliP + '% от обходов');
+  s('fn-lost',       fnLost);
+  s('fn-lost-pct',   fnLostP + '% дегустаций');
+  s('fn-arr1-pct',   fnDegsP + '%');
+  s('fn-arr2-pct',   fnCliDegP + '%');
+  s('fn-arr3-pct',   fnLostP + '%');
+
+  const ltvMonths  = g('ltv-months');
+  const ltvFreq    = g('ltv-freq');
+  const ltvKg      = g('ltv-kg');
+  const ltvPrUAH   = g('ltv-price-uah');
+  const ltvCogsPct = g('ltv-cogs')/100;
+
+  // Все заказы за срок жизни включая первый
+  const totalOrders = (ltvFreq/12) * ltvMonths;
+  const ltvChek     = ltvKg * ltvPrUAH;
+  // Выручка = все заказы × чек
+  const ltvRevenue  = totalOrders * ltvChek;
+  // Себестоимость = выручка × %
+  const ltvCogsAmt  = ltvRevenue * ltvCogsPct;
+  // LTV = маржа за весь срок = выручка × (1 - себест%)
+  const ltv         = ltvRevenue * (1 - ltvCogsPct);
+  const ltvMinCac   = ltv - cac1;
+  const ltvRatio    = cac1>0 ? ltv/cac1 : 0;
+
+  s('ltv-orders-val', totalOrders.toFixed(1)+' заказов за '+Math.round(ltvMonths)+' мес. (включая первый)');
+  fillF('ltv-rev-f-uah','ltv-rev-f-usd', ltvRevenue*clients);
+  fill('ltv-rev-p-uah','ltv-rev-p-usd', ltvRevenue*plan);
+  fillF('ltv-cogs-f-uah','ltv-cogs-f-usd', ltvCogsAmt*clients);
+  fill('ltv-cogs-p-uah','ltv-cogs-p-usd', ltvCogsAmt*plan);
+  fillF('ltv-f-uah','ltv-f-usd', ltv*clients);
+  fill('ltv-p-uah','ltv-p-usd', ltv*plan);
+  fillF('ltvcac-f-uah','ltvcac-f-usd', ltvMinCac*clients);
+  fill('ltvcac-p-uah','ltvcac-p-usd', ltvMinCac*plan);
+
+  const ltvRatio1 = cac1>0    ? ltv/cac1    : 0;  // LTV 1 кл ÷ CAC факт
+  const ltvRatioF = cac1>0    ? ltv/cac1    : 0;  // то же — CAC одинаков
+  const ltvRatioP = cacPlan>0 ? ltv/cacPlan : 0;  // LTV 1 кл ÷ CAC план
+
+  function ratioDisplay(ratio) {
+    const str = fx(ratio);
+    const color = ratio>=3 ? 'var(--green)' : ratio>=1 ? 'var(--amber)' : 'var(--red)';
+    const meaning = ratio>=3
+      ? ' — отлично'
+      : ratio>=1
+      ? ' — норма от 3×'
+      : ' — убыток';
+    return { str, color, meaning };
+  }
+
+  ['ltvcac-ratio-1','ltvcac-ratio-f','ltvcac-ratio-p'].forEach((id, i) => {
+    const ratio = [ltvRatio1, ltvRatioF, ltvRatioP][i];
+    const { str, color, meaning } = ratioDisplay(ratio);
+    const el = document.getElementById(id);
+    if(el){ el.textContent = str + meaning; el.style.color = color; }
+  });
+
+  document.getElementById('ltv-profit-row').className = ltvMinCac>=0?'profit-good':'profit-bad';
+
+  // Payback period — на каком заказе окупается CAC
+  const orderInterval = ltvFreq>0 ? 12/ltvFreq : 12; // месяцев между заказами
+  const margin1order  = ltv / totalOrders;             // маржа 1 заказа (из LTV)
+
+  function paybackDisplay(cac) {
+    if(margin1order<=0) return { ordersStr:'—', monthStr:'—', color:'var(--text3)' };
+    const ordersNeeded = Math.ceil(cac / margin1order);
+    // Если окупается на 1-м заказе — это месяц привлечения (месяц 1)
+    // Иначе: первый заказ в месяц привлечения + последующие через интервал
+    const monthNeeded = ordersNeeded <= 1 ? 1 : Math.round(1 + (ordersNeeded - 1) * orderInterval);
+    const color = ordersNeeded<=1 ? 'var(--green)' : ordersNeeded<=3 ? 'var(--amber)' : 'var(--red)';
+    const ordersStr = ordersNeeded + (ordersNeeded===1?' заказ':ordersNeeded<5?' заказа':' заказов');
+    const monthStr  = '≈ ' + monthNeeded + (monthNeeded===1?' месяц':monthNeeded<5?' месяца':' месяцев');
+    return { ordersStr, monthStr, color };
+  }
+
+  const pbFact = paybackDisplay(cac1);
+  const pbPlan = paybackDisplay(cacPlan);
+
+  ['f','p'].forEach((col, i) => {
+    const pb = [pbFact, pbPlan][i];
+    const elO = document.getElementById('payback-orders-'+col);
+    const elM = document.getElementById('payback-month-'+col);
+    if(elO){ elO.textContent = pb.ordersStr || '—'; elO.style.color = pb.color; }
+    if(elM){ elM.textContent = pb.monthStr  || '—'; elM.style.color = pb.color; }
+  });
+
+  // ── KPI cards ──
+  const kpi1El = document.getElementById('kpi-profit1');
+  kpi1El.className = 'kpi '+(prof1_1>=0?'good':'bad');
+  s('kpi-profit1-val', uah(prof1_1));
+  s('kpi-profit1-usd', dol(prof1_1/r));
+  s('kpi-profit1-meaning', prof1_1>=0
+    ? '✅ Клиент окупает затраты на привлечение уже в первый месяц'
+    : `⚠ Клиент окупится через ${Math.ceil(cac1/margin1)} мес. при повторных заказах`);
+
+  const profM_plan_new = margin1*plan - attPoolPlan;
+  const bepNew = margin1>0 ? Math.ceil(attPool/margin1) : 0;
+  const kpiMEl = document.getElementById('kpi-profit-month');
+  kpiMEl.className = 'kpi '+(profM_plan_new>=0?'good':'bad');
+  s('kpi-profit-month-val', uah(profM_plan_new));
+  s('kpi-profit-month-usd', dol(profM_plan_new/r));
+  s('kpi-profit-month-meaning', profM_plan_new>=0
+    ? `✅ При ${Math.round(plan)} клиентах месяц прибыльный`
+    : `❌ При ${Math.round(plan)} клиентах месяц убыточный. Нужно минимум ${bepNew} кл.`);
+
+  const bepEl = document.getElementById('kpi-bep');
+  bepEl.className = 'kpi '+(plan>=bep?'good':'accent');
+  s('kpi-bep-val', bep);
+  s('kpi-bep-sub', 'клиентов / мес');
+  s('kpi-bep-meaning', plan>=bep
+    ? `✅ Ваш план (${Math.round(plan)} кл.) выше точки безубыточности`
+    : `⚠ Ваш план (${Math.round(plan)} кл.) ниже точки безубыточности`);
+
+  // ── verdict ──
+  const verdict = document.getElementById('verdict');
+  const vtitle  = document.getElementById('verdict-title');
+  const vsub    = document.getElementById('verdict-sub');
+
+  if(profM_plan>=0 && ltvRatioP>=3){
+    verdict.className='verdict good';
+    vtitle.textContent='✅ Модель прибыльная — план окупается';
+    vsub.textContent=`При ${Math.round(plan)} клиентах прибыль за месяц ${uah(profM_plan)} / ${dol(profM_plan/r)}. LTV/CAC = ${fx(ltvRatioP)} — отлично.`;
+  } else if(profM_plan>=0){
+    verdict.className='verdict warn';
+    vtitle.textContent='⚠ Месяц в плюсе, но LTV/CAC ниже нормы';
+    vsub.textContent=`Прибыль есть (${uah(profM_plan)}), но LTV/CAC = ${fx(ltvRatioP)} — норма от 3×. Повышайте повторные продажи.`;
+  } else if(plan>=bep*0.8){
+    verdict.className='verdict warn';
+    vtitle.textContent=`⚠ Почти у точки безубыточности — нужно ещё ${bep-Math.round(plan)} кл.`;
+    vsub.textContent=`Точка безубыточности: ${bep} клиентов. Ваш план: ${Math.round(plan)}. Убыток за месяц: ${uah(profM_plan)}.`;
+  } else {
+    verdict.className='verdict bad';
+    vtitle.textContent=`❌ Модель убыточна — нужно минимум ${bep} клиентов`;
+    vsub.textContent=`Сейчас план ${Math.round(plan)} кл., убыток ${uah(profM_plan)} / ${dol(profM_plan/r)}. Увеличьте конверсию или снизьте затраты на привлечение.`;
+  }
+}
+
+calc();
+</script>
+</body>
+</html>
