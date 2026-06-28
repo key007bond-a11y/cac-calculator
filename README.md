@@ -6,7 +6,7 @@
 
 ## 📊 [Открыть калькулятор](https://key007bond-a11y.github.io/cac-calculator/CAC%20calculator.html)
 
-## 📋 [Открыть инструкцию](https://key007bond-a11y.github.io/cac-calculator/instruction.html)
+## 📋 [Открыть инструкцию](https://key007bond-a11y.github.io/cac-calculator/CAC%20calculator%20instruction.html)
 
 ---
 
